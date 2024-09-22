@@ -1,3 +1,8 @@
+#define NDEBUG true
+#include "PCH.h"
+#include "Patch.h"
+// #include "Patch.cpp"
+
 #define DLLEXPORT __declspec(dllexport)
 
 void InitializeLog([[maybe_unused]] spdlog::level::level_enum a_level = spdlog::level::info)
@@ -29,6 +34,13 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	InitializeLog();
 	logger::info("Loaded plugin {} {}", Plugin::NAME, Plugin::VERSION.string());
 	SKSE::Init(a_skse);
+	Patch::Setup();
+	SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message * msg) {
+
+		if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
+			Patch::ProcessLoadOrder();
+		}
+	});
 	return true;
 }
 
