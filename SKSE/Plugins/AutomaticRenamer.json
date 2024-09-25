@@ -2,5 +2,11 @@
 	"Armor": [],
 	"Weapon": [],
 	"Ingredient": [],
-	"Ingestible": []
+	"Ingestible": [],
+	"Furniture": [],
+	"Flora": [],
+	"Door": [],
+	"Activator": [],
+	"Container": [],
+	"Misc": []
 }
