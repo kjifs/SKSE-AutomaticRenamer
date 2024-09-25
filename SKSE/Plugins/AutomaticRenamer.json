@@ -8,5 +8,12 @@
 	"Door": [],
 	"Activator": [],
 	"Container": [],
-	"Misc": []
+	"Misc": [],
+	"Ammunition": [],
+	"Scroll": [],
+	"Soul Gem": [],
+	"Key": [],
+	"Spell": [],
+	"NPC": []
+
 }

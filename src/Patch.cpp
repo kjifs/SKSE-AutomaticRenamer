@@ -2,12 +2,13 @@
 #include "Patch.h"
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <tuple>
 using json = nlohmann::json;
 using std::string;
 
 namespace Patch {
 
-    std::map<string,std::vector<std::pair<string,string>>> renames = {};
+    std::map<string,std::vector<std::tuple<string,string,bool>>> renames = {};
 
     inline bool replace(std::string& str, const std::string& from, const std::string& to) {
         size_t start_pos = str.find(from);
@@ -25,15 +26,25 @@ namespace Patch {
             logger::error("Config file {} not found", configFileName);
             return;
         }
-        json config = json::parse(configFile);
-        logger::info("config: {}", nlohmann::to_string(config));
-        for (auto& [key,value] : config.items()) {
-            for(auto& entry : value) {
-                auto from = entry.at(0).template get<string>();
-                auto to =  entry.at(1).template get<string>();
-                logger::info("{} Entry: {} -> {}", key, from, to);
-                renames[key].push_back(std::make_pair(from,to));
+        json config;
+        try {
+
+            config = json::parse(configFile);
+            logger::info("config: {}", nlohmann::to_string(config));
+            for (auto& [key,value] : config.items()) {
+                for(auto& entry : value) {
+                    auto from = entry.at(0).template get<string>();
+                    auto to =  entry.at(1).template get<string>();
+                    bool exact = false;
+                    if (entry.size() == 3) {
+                        exact = entry.at(2).template get<bool>();
+                    }
+                    logger::info("{} Entry: {} -> {}, exact match: {}", key, from, to, exact);
+                    renames[key].push_back(std::make_tuple(from, to, exact));
+                }
             }
+        } catch(const json::exception& e) {
+            logger::error("Error parsing config file {}: {}", configFileName, e.what());
         }
     }
 
@@ -42,7 +53,19 @@ namespace Patch {
         string name = obj->GetFullName();
         for(auto rename : renames[type]) {
             string oldName = name;
-            if (replace(name, rename.first, rename.second)) {
+            string from;
+            string to;
+            bool exact;
+            tie(from, to, exact) = rename;
+            if (exact) {
+                if (name == from) {
+                    name = to;
+                    logger::info("Renamed {} -> {}", oldName, name);
+                    obj->SetFullName(name.c_str());
+                    ret = true;
+                }
+            }
+            else if (replace(name, get<0>(rename), get<1>(rename))) {
                 logger::info("Renamed {} -> {}", oldName, name);
                 obj->SetFullName(name.c_str());
                 ret = true;
@@ -79,7 +102,11 @@ namespace Patch {
         renameAll<RE::TESFurniture>("Furniture");
         renameAll<RE::TESObjectDOOR>("Door");
         renameAll<RE::TESObjectCONT>("Container");
-
+        renameAll<RE::TESAmmo>("Ammunition");
+        renameAll<RE::ScrollItem>("Scroll");
+        renameAll<RE::TESSoulGem>("Soul Gem");
+        renameAll<RE::TESKey>("Key");
+        renameAll<RE::SpellItem>("Spell");
 
     }
 }
