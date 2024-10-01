@@ -107,6 +107,9 @@ namespace Patch {
         renameAll<RE::TESSoulGem>("Soul Gem");
         renameAll<RE::TESKey>("Key");
         renameAll<RE::SpellItem>("Spell");
+        renameAll<RE::TESNPC>("NPC");
+        renameAll<RE::TESObjectTREE>("Tree");
+        renameAll<RE::TESObjectBOOK>("Book");
 
     }
 }
