@@ -5,6 +5,7 @@
 #include <tuple>
 using json = nlohmann::json;
 using std::string;
+namespace fs = std::filesystem;
 
 namespace Patch {
 
@@ -19,32 +20,46 @@ namespace Patch {
     }
 
     void Setup() {
-        string configFileName = std::format("Data/SKSE/Plugins/{}.json", Plugin::NAME);
-        logger::info("Loading config file {}", configFileName);
-        std::ifstream configFile(configFileName);
-        if (!configFile.good()) {
-            logger::error("Config file {} not found", configFileName);
-            return;
-        }
-        json config;
-        try {
-
-            config = json::parse(configFile);
-            logger::info("config: {}", nlohmann::to_string(config));
-            for (auto& [key,value] : config.items()) {
-                for(auto& entry : value) {
-                    auto from = entry.at(0).template get<string>();
-                    auto to =  entry.at(1).template get<string>();
-                    bool exact = false;
-                    if (entry.size() == 3) {
-                        exact = entry.at(2).template get<bool>();
-                    }
-                    logger::info("{} Entry: {} -> {}, exact match: {}", key, from, to, exact);
-                    renames[key].push_back(std::make_tuple(from, to, exact));
+        const fs::path path{std::format("Data/SKSE/Plugins/{}", Plugin::NAME)};
+        std::vector<string> files;
+        files.push_back(std::format("Data/SKSE/Plugins/{}.json", Plugin::NAME));
+        if (fs::exists(path)) {
+            for (auto const& file : fs::directory_iterator{path}) {
+                if (fs::is_regular_file(file) && file.path().extension() == ".json") {
+                    files.push_back(file.path().generic_string());
                 }
             }
-        } catch(const json::exception& e) {
-            logger::error("Error parsing config file {}: {}", configFileName, e.what());
+        }
+
+        std::sort(files.begin(), files.end());
+
+        for (auto const& configFileName : files) {
+            logger::info("Loading config file {}", configFileName);
+            std::ifstream configFile(configFileName);
+            if (!configFile.good()) {
+                logger::error("Config file {} not found", configFileName);
+                continue;
+            }
+            json config;
+            try {
+                config = json::parse(configFile);
+                logger::info("config: {}", nlohmann::to_string(config));
+                for (auto& [key,value] : config.items()) {
+                    for(auto& entry : value) {
+                        auto from = entry.at(0).template get<string>();
+                        auto to =  entry.at(1).template get<string>();
+                        bool exact = false;
+                        if (entry.size() == 3) {
+                            exact = entry.at(2).template get<bool>();
+                        }
+                        logger::info("{} Entry: {} -> {}, exact match: {}", key, from, to, exact);
+                        renames[key].push_back(std::make_tuple(from, to, exact));
+                    }
+                }
+            } catch(const json::exception& e) {
+                logger::error("Error parsing config file {}: {}", configFileName, e.what());
+                continue;
+            }
         }
     }
 
