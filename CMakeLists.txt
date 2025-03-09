@@ -73,9 +73,13 @@ if(AUTO_PLUGIN_DEPLOYMENT)
 	foreach(DEPLOY_TARGET $ENV{SamplePluginOutputDir})
 		message("Copying AIO to ${DEPLOY_TARGET}")
 		add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E echo "Copying to ${DEPLOY_TARGET}/SKSE/Plugins/"
 			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/"
+			COMMAND ${CMAKE_COMMAND} -E echo "Copying to D:/MO2-SkyrimTest/mods/AutomaticRenamer/SKSE/Plugins"
+			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "D:/MO2-SkyrimTest/mods/AutomaticRenamer/SKSE/Plugins"
+
 			# COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/"
-			COMMAND ${CMAKE_COMMAND} -E tar c "${DEPLOY_TARGET}/${PROJECT_NAME}.zip" --format=zip "${DEPLOY_TARGET}/SKSE/Plugins/"
+			COMMAND ${CMAKE_COMMAND} -E tar c "${DEPLOY_TARGET}/${PROJECT_NAME}.zip" --format=zip "SKSE/Plugins/"
 		)
 	endforeach()
 
