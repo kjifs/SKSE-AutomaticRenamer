@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(
 	AutomaticRenamer
-	VERSION 1.4.0
+	VERSION 1.4.1
 	LANGUAGES CXX
 )
 set(CMAKE_CXX_STANDARD 17)
@@ -79,9 +79,10 @@ if(AUTO_PLUGIN_DEPLOYMENT)
 			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> "D:/MO2-SkyrimTest/mods/AutomaticRenamer/SKSE/Plugins"
 
 			# COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_PDB_FILE:${PROJECT_NAME}> "${DEPLOY_TARGET}/SKSE/Plugins/"
-			COMMAND ${CMAKE_COMMAND} -E tar c "${DEPLOY_TARGET}/${PROJECT_NAME}.zip" --format=zip "SKSE/Plugins/"
-		)
-	endforeach()
+			COMMAND ${CMAKE_COMMAND} -E tar cf "${DEPLOY_TARGET}/${PROJECT_NAME}.zip" --format=zip "SKSE"
+			WORKING_DIRECTORY ${DEPLOY_TARGET}
+			)
+			endforeach()
 
 	if(NOT DEFINED ENV{SamplePluginOutputDir})
 		message("When using AUTO_PLUGIN_DEPLOYMENT option, you need to set environment variable 'SamplePluginOutputDir'")
