@@ -20,9 +20,9 @@ namespace Patch {
     }
 
     void Setup() {
-        const fs::path path{std::format("Data/SKSE/Plugins/{}", Plugin::NAME)};
+        const fs::path path{std::format("Data/SKSE/Plugins/{}", SKSE::PluginDeclaration::GetSingleton()->GetName())};
         std::vector<string> files;
-        files.push_back(std::format("Data/SKSE/Plugins/{}.json", Plugin::NAME));
+        files.push_back(std::format("Data/SKSE/Plugins/{}.json", SKSE::PluginDeclaration::GetSingleton()->GetName()));
         if (fs::exists(path)) {
             for (auto const& file : fs::directory_iterator{path}) {
                 if (fs::is_regular_file(file) && file.path().extension() == ".json") {
@@ -127,4 +127,21 @@ namespace Patch {
         renameAll<RE::TESObjectBOOK>("Book");
 
     }
+}
+
+SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
+{
+	SKSE::Init(a_skse);
+
+	logger::info("Hello World!");
+
+    Patch::Setup();
+	SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message * msg) {
+
+		if (msg->type == SKSE::MessagingInterface::kDataLoaded) {
+			Patch::ProcessLoadOrder();
+		}
+	});
+
+	return true;
 }
